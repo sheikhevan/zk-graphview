@@ -31,6 +31,7 @@
 
 			const width = window.innerWidth;
 			const height = window.innerHeight;
+
 			const nodesWithIds = nodes.map((node) => ({
 				...node,
 				id: node.filenameStem
