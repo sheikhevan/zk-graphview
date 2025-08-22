@@ -160,4 +160,22 @@
 	}
 </script>
 
-<div bind:this={graphContainer} style="width: 100%; height: 100vh;"></div>
+<div
+	style="
+    position: fixed; 
+    top: 20px; 
+    right: 20px; 
+    width: 200px; 
+    height: 150px; 
+    background: rgba(255, 255, 255, 0.9); 
+    border: 1px solid #ccc; 
+    border-radius: 8px; 
+    z-index: 1000;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    pointer-events: auto;
+    "
+>
+	<p>Overlay content</p>
+</div>
+<div bind:this={graphContainer} style="width: 100%; height: 100vh; position: relative"></div>
