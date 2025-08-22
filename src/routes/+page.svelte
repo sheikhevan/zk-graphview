@@ -3,12 +3,18 @@
 	import { browser } from '$app/environment';
 	import * as d3 from 'd3';
 	import { Slider } from '$lib/components/ui/slider/index.js';
+	import { Label } from '$lib/components/ui/label/index.js';
+	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 
 	let { data } = $props();
 	let graphJson = $state(data.graph);
 	let graphContainer: HTMLDivElement;
 
-	let centerStrength = $state(300);
+	let centerStrength = $state(150);
+	let linkDistance = $state(30);
+	let linkStrength = $state(0.2);
+	let showLabels = $state(true);
 
 	onMount(async () => {
 		if (!graphJson && browser) {
@@ -26,6 +32,15 @@
 			createGraph(nodes, links);
 		}
 	});
+
+	let labelsSelection: any = null;
+
+	$effect(() => {
+		if (labelsSelection && browser) {
+			labelsSelection.style('display', showLabels ? 'block' : 'none');
+		}
+	});
+
 	const color = d3.scaleOrdinal(d3.schemeCategory10);
 
 	function extractNodeId(node: any): string {
@@ -64,7 +79,11 @@
 				.forceSimulation(nodesWithIds)
 				.force(
 					'link',
-					d3.forceLink(transformedLinks).id((d: any) => d.id)
+					d3
+						.forceLink(transformedLinks)
+						.id((d: any) => d.id)
+						.distance(linkDistance)
+						.strength(linkStrength)
 				)
 				.force('charge', d3.forceManyBody().strength(-centerStrength))
 				.force('center', d3.forceCenter(width / 2, height / 2));
@@ -78,9 +97,12 @@
 
 			const container = svg.append('g');
 
-			const zoom = d3.zoom().on('zoom', (event) => {
-				container.attr('transform', event.transform);
-			});
+			const zoom = d3
+				.zoom()
+				.scaleExtent([0, 10])
+				.on('zoom', (event) => {
+					container.attr('transform', event.transform);
+				});
 
 			svg.call(zoom as any);
 
@@ -111,7 +133,10 @@
 				.text((d) => d.title || d.filenameStem)
 				.attr('font-size', '12px')
 				.attr('dx', 12)
-				.attr('dy', 4);
+				.attr('dy', 4)
+				.style('display', showLabels ? 'block' : 'none');
+
+			labelsSelection = labels;
 
 			node.append('title').text((d) => d.title || d.filenameStem);
 
@@ -126,7 +151,10 @@
 
 				node.attr('cx', (d: any) => d.x).attr('cy', (d: any) => d.y);
 
-				labels.attr('x', (d: any) => d.x).attr('y', (d: any) => d.y);
+				labels
+					.attr('x', (d: any) => d.x)
+					.attr('y', (d: any) => d.y)
+					.style('display', showLabels ? 'block' : 'none');
 			});
 
 			function dragstarted(event: any) {
@@ -165,21 +193,58 @@
 </script>
 
 <div
-	style="
-    position: fixed; 
-    top: 20px; 
-    right: 20px; 
-    width: 200px; 
-    height: 150px; 
-    background: rgba(255, 255, 255, 0.9); 
-    border: 1px solid #ccc; 
-    border-radius: 8px; 
-    z-index: 1000;
-    padding: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    pointer-events: auto;
-    "
+	class="bg-opacity-90 pointer-events-auto fixed top-5 right-5 z-50 w-80 space-y-4 rounded-lg border border-gray-300 bg-white p-4 shadow-lg"
 >
-	<Slider type="single" bind:value={centerStrength} max={1000} step={10} />
+	<div>
+		<Label for="centerforce">Center Force</Label>
+		<Slider
+			type="single"
+			bind:value={centerStrength}
+			max={1000}
+			min={10}
+			step={10}
+			id="centerforce"
+			class="mt-2"
+		/>
+		<span class="text-sm text-gray-600">{centerStrength}</span>
+	</div>
+
+	<div>
+		<Label for="linkdistance">Link Distance</Label>
+		<Slider
+			type="single"
+			bind:value={linkDistance}
+			min={10}
+			max={200}
+			step={5}
+			id="linkdistance"
+			class="mt-2"
+		/>
+		<span class="text-sm text-gray-600">{linkDistance}</span>
+	</div>
+
+	<div>
+		<Label for="linkstrength">Link Strength</Label>
+		<Slider
+			type="single"
+			bind:value={linkStrength}
+			min={0}
+			max={2}
+			step={0.1}
+			id="linkstrength"
+			class="mt-2"
+		/>
+		<span class="text-sm text-gray-600">{linkStrength.toFixed(1)}</span>
+	</div>
+
+	<div class="flex items-center space-x-2">
+		<Checkbox bind:checked={showLabels} id="showlabels" />
+		<Label for="showlabels">Show Labels</Label>
+	</div>
+
+	<div class="flex flex-col space-y-3 space-x-2">
+		<Label for="json">Graph JSON</Label>
+		<Input id="json" type="file" onchange={handleUpload} accept=".json" />
+	</div>
 </div>
-<div bind:this={graphContainer} style="width: 100%; height: 100vh; position: relative"></div>
+<div bind:this={graphContainer} class="relative h-screen w-full"></div>
