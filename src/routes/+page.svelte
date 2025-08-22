@@ -24,6 +24,10 @@
 
 	const color = d3.scaleOrdinal(d3.schemeCategory10);
 
+	function extractNodeId(node: any): string {
+		return node.metadata?.id || node.filenameStem || '';
+	}
+
 	function createGraph(nodes: any[], links: any[]) {
 		if (!nodes.length) return;
 		if (browser) {
@@ -34,15 +38,21 @@
 
 			const nodesWithIds = nodes.map((node) => ({
 				...node,
-				id: node.filenameStem
+				id: extractNodeId(node)
 			}));
 
 			const transformedLinks = links.map((link) => {
 				const sourceNode = nodes.find((node) => node.path === link.sourcePath);
+				const targetNode = nodes.find(
+					(node) =>
+						node.metadata?.id === link.href ||
+						node.filename === link.href ||
+						node.filenameStem === link.href
+				);
 				return {
 					...link,
-					source: sourceNode?.filenameStem,
-					target: link.href
+					source: sourceNode ? extractNodeId(sourceNode) : link.sourcePath,
+					target: targetNode ? extractNodeId(targetNode) : link.href
 				};
 			});
 
@@ -62,7 +72,15 @@
 				.attr('height', height)
 				.style('border', '1px solid #ccc');
 
-			const link = svg
+			const container = svg.append('g');
+
+			const zoom = d3.zoom().on('zoom', (event) => {
+				container.attr('transform', event.transform);
+			});
+
+			svg.call(zoom as any);
+
+			const link = container
 				.append('g')
 				.attr('stroke', '#999')
 				.attr('stroke-opacity', 0.6)
@@ -71,7 +89,7 @@
 				.join('line')
 				.attr('stroke-width', 2);
 
-			const node = svg
+			const node = container
 				.append('g')
 				.attr('stroke', '#fff')
 				.attr('stroke-width', 1.5)
@@ -81,8 +99,7 @@
 				.attr('r', 8)
 				.attr('fill', (d, i) => color(i.toString()));
 
-			// Add labels
-			const labels = svg
+			const labels = container
 				.append('g')
 				.selectAll('text')
 				.data(nodesWithIds)
@@ -94,7 +111,7 @@
 
 			node.append('title').text((d) => d.title || d.filenameStem);
 
-			node.call(d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended));
+			node.call(d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended) as any);
 
 			simulation.on('tick', () => {
 				link
@@ -143,5 +160,4 @@
 	}
 </script>
 
-<input type="file" on:change={handleUpload} accept=".json" />
 <div bind:this={graphContainer} style="width: 100%; height: 100vh;"></div>
