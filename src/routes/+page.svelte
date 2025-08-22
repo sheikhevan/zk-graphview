@@ -2,10 +2,13 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import * as d3 from 'd3';
+	import { Slider } from '$lib/components/ui/slider/index.js';
 
-	export let data;
-	let graphJson = data.graph;
+	let { data } = $props();
+	let graphJson = $state(data.graph);
 	let graphContainer: HTMLDivElement;
+
+	let centerStrength = $state(300);
 
 	onMount(async () => {
 		if (!graphJson && browser) {
@@ -16,12 +19,13 @@
 		}
 	});
 
-	$: if (graphJson && graphContainer) {
-		const nodes = graphJson.notes || [];
-		const links = graphJson.links || [];
-		createGraph(nodes, links);
-	}
-
+	$effect(() => {
+		if (graphJson && browser && graphContainer) {
+			const nodes = graphJson.notes || [];
+			const links = graphJson.links || [];
+			createGraph(nodes, links);
+		}
+	});
 	const color = d3.scaleOrdinal(d3.schemeCategory10);
 
 	function extractNodeId(node: any): string {
@@ -62,7 +66,7 @@
 					'link',
 					d3.forceLink(transformedLinks).id((d: any) => d.id)
 				)
-				.force('charge', d3.forceManyBody().strength(-300))
+				.force('charge', d3.forceManyBody().strength(-centerStrength))
 				.force('center', d3.forceCenter(width / 2, height / 2));
 
 			const svg = d3
@@ -176,6 +180,6 @@
     pointer-events: auto;
     "
 >
-	<p>Overlay content</p>
+	<Slider type="single" bind:value={centerStrength} max={1000} step={10} />
 </div>
 <div bind:this={graphContainer} style="width: 100%; height: 100vh; position: relative"></div>
