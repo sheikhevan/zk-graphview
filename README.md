@@ -1,38 +1,82 @@
-# sv
+# zk-graphview
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+An interactive force-directed graph visualization tool for exploring knowledge networks and note connections. zk-graphview
+is meant to be used with [zk](https://github.com/zk-org/zk), though you could theoretically use it with any markdown
+zettelkasten. This is not recommended as you would (as of right now, might change in the future) have to create your own
+JSON file. See this application's Neovim plugin companion [here](https://github.com/sheikhevan/zk-extras.nvim).
 
-## Creating a project
+Yes, I stole this idea from ObsidianMD and made it open source.
 
-If you're seeing this, you've probably already done this step. Congrats!
+![Preview1](./previews/zk-graphview_1.png)
 
-```sh
-# create a new project in the current directory
-npx sv create
+![Preview2](./previews/zk-graphview_2.png)
 
-# create a new project in my-app
-npx sv create my-app
+## Features
+
+- **Interactive Force-Directed Graph**: Nodes connected by links that you can interact and play with.
+- **Real-time Controls**: Adjust graph behavior like center force and link strength with sliders.
+- **File Uploading**: You can upload your own graph JSON either through an input or as a url parameter.
+- **Local Storage**: Upon uploading a JSON, it will store that JSON in local storage so you can reload the page and it will
+still work.
+
+## Getting Started
+
+#### Prerequisites
+
+- Node.js 18+
+- bun, npm, pnpm, whatever man
+
+For the installation I will be using bun, but let it be noted that you could use npm or pnpm as well.
+
+#### Installation
+
+```bash
+git clone https://github.com/sheikhevan/zk-graphview.git
+cd zk-graphview
+bun install
 ```
 
-## Developing
+#### Running
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```bash
+bun run build
+bun run preview --open
 ```
 
-## Building
+#### Running (Development)
 
-To create a production version of your app:
-
-```sh
-npm run build
+```bash
+bun run dev --open
 ```
 
-You can preview the production build with `npm run preview`.
+#### Usage
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+First, you need to generate a graph JSON, in your zk directory:
+```bash
+zk graph --format=json > graph.json
+```
+
+Then, click the file upload in the app and choose your generated graph.json. <br>
+OR <br>
+Go to the URL: `https://localhost:4173?graph=path_to_your_json`
+
+## Tech Stack
+
+- TypeScript
+- SvelteKit
+- d3.js
+- Vite
+- TailwindCSS
+- shadcn/ui (Svelte)
+
+## Contributing
+
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m "I added an AMAZING feature"`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request, i promise I'll look at them.
+
+## License
+
+This project uses the MIT license, see [here](./LICENSE).
