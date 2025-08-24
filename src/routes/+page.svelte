@@ -196,7 +196,7 @@
 	class="bg-opacity-90 pointer-events-auto fixed top-5 right-5 z-50 w-80 space-y-4 rounded-lg border border-gray-300 bg-white p-4 shadow-lg"
 >
 	<div>
-		<Label for="centerforce">Center Force</Label>
+		<Label for="centerforce">Repulsion Force</Label>
 		<Slider
 			type="single"
 			bind:value={centerStrength}
