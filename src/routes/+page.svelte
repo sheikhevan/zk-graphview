@@ -16,12 +16,61 @@
 	let linkStrength = $state(0.2);
 	let showLabels = $state(true);
 
+	function saveToStorage(key: string, value: any) {
+		if (browser) {
+			window.localStorage.setItem(key, JSON.stringify(value));
+		}
+	}
+
+	function loadFromStorage(key: string, defaultValue: any) {
+		if (browser) {
+			const stored = window.localStorage.getItem(key);
+			if (stored) {
+				try {
+					return JSON.parse(stored);
+				} catch (e) {
+					console.warn(`Failed to parse stored value for ${key}:`, e);
+				}
+			}
+		}
+		return defaultValue;
+	}
+
 	onMount(async () => {
 		if (!graphJson && browser) {
-			const stored = localStorage.getItem('zk-graph');
+			const stored = window.localStorage.getItem('zk-graph');
 			if (stored) {
 				graphJson = JSON.parse(stored);
 			}
+		}
+
+		centerStrength = loadFromStorage('center-strength', 150);
+		linkDistance = loadFromStorage('link-distance', 30);
+		linkStrength = loadFromStorage('link-strength', 0.2);
+		showLabels = loadFromStorage('show-labels', true);
+	});
+
+	$effect(() => {
+		if (browser) {
+			saveToStorage('center-strength', centerStrength);
+		}
+	});
+
+	$effect(() => {
+		if (browser) {
+			saveToStorage('link-distance', linkDistance);
+		}
+	});
+
+	$effect(() => {
+		if (browser) {
+			saveToStorage('link-strength', linkStrength);
+		}
+	});
+
+	$effect(() => {
+		if (browser) {
+			saveToStorage('show-labels', showLabels);
 		}
 	});
 
